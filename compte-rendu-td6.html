@@ -1,0 +1,290 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Compte Rendu TD6</title>
+    <link rel="stylesheet" href="style-compte-rendu.css">
+</head>
+
+<body>
+    <h1 id="compte-rendu-du-mini-projet-nlp">Compte-rendu du mini-projet NLP</h1>
+    <p>Nom : GHORZI <br>
+        Prénom : Isaac <br>
+        Num. Etudiant : 22400381</p>
+    <hr>
+    <h2 id="sommaire">Sommaire</h2>
+    <ul>
+        <li><a href="#objectif">Objectif du projet</a></li>
+        <li><a href="#cahier-des-charges">Cahier des charges</a></li>
+        <li><a href="#ressources">Ressources utilisées</a></li>
+        <li><a href="#developpement-du-projet">Développement du programme</a></li>
+        <li><a href="#definition-des-fonctions">Définition des fonctions</a></li>
+    </ul>
+    <hr>
+    <h2 id="objectif">Objectif</h2>
+    <p>L&#39;objectif de ce projet était de concevoir un programme de traitement du langage naturel (NLP) en
+        implémentant un
+        système de RAG (Retrieval-Augmented Generation) dans le but d&#39;encoder des documents et des requêtes sous
+        forme
+        d&#39;embeddings.</p>
+    <p>Un embedding est la représentation d&#39;une donnée sous forme vectorielle, permettant d&#39;effectuer des
+        opérations
+        mathématiques dessus comme la distance cosinus pour déterminer la similarité entre deux phrases.</p>
+    <p>Le programme devait convertir des documents, puis une requête saisie par utilisateur en embeddings afin de
+        déterminer
+        quels documents sont les plus pertinents par rapport à la requête.
+        Autrement dit, un utilisateur devait pouvoir chercher un document en saisissant une requête sur le programme.
+    </p>
+    <hr>
+    <h2 id="cahier-des-charges">Cahier des charges</h2>
+    <ul>
+        <li>Le programme devait disposer d&#39;une interface utilisateur en lignes de commande pour saisir les requêtes.
+        </li>
+        <li>Les documents devaient être enregistrés dans un fichier Json avec leur index et vecteur d&#39;embeddings.
+        </li>
+        <li>Le programme devait renvoyer seulement les documents pertinents à la requête.</li>
+    </ul>
+    <hr>
+    <h2 id="ressources">Ressources</h2>
+    <p>Le programme a été écrit en python.
+        Pour implémenter ce système, on a utilisé les modules suivants :</p>
+    <ol>
+        <li>
+            <p>Modules standarts :</p>
+            <ul>
+                <li>json : Pour stocker des données sous forme de fichiers Json;</li>
+                <li>sys : Pour interprêter des éventuelles requêtes entrées en lignes de commande;</li>
+            </ul>
+        </li>
+        <li>
+            <p>Modules externes :</p>
+            <ul>
+                <li>numpy : Pour réaliser des calculs vectoriels;</li>
+                <li>sentence_transformers : Un module permettant d&#39;encoder une chaîne de caractère en un vecteur
+                    d&#39;embeddings à l&#39;aide d&#39;un modèle d&#39;encodage;</li>
+            </ul>
+        </li>
+    </ol>
+    <hr>
+    <h2 id="developpement-du-projet">Développement du projet</h2>
+    <h3 id="installation-du-module-sentence-transformers">Installation du module Sentence Transformers</h3>
+    <p>Pour pouvoir commencer à écrire le programme, il était nécessaire d&#39;installer le module &quot;Sentence
+        Transformers&quot; afin de pouvoir encoder les documents et les requêtes. Ce module nécessitait dans un premier
+        temps d&#39;installer une version antérieure de python, ici la version 3.11 :</p>
+    <pre><code class="lang-zsh"><span class="hljs-selector-tag">brew</span> <span class="hljs-selector-tag">install</span> <span class="hljs-selector-tag">python</span>@<span class="hljs-keyword">3</span>.<span class="hljs-keyword">11</span>
+</code></pre>
+    <p>Et dans un second temps, la création d&#39;un environnement virtuel pour python :</p>
+    <pre><code class="lang-zsh">python3.<span class="hljs-number">11</span> venv .venv
+<span class="hljs-keyword">source</span> .venv<span class="hljs-regexp">/bin/</span>activate
+</code></pre>
+    <p>Ici, la première ligne créer un dossier &quot;.venv&quot; contenant l&#39;environnement virtuel python version
+        3.11.
+        La seconde ligne permet d&#39;activer l&#39;environnement virtuel. Comme les environnement virtuels sont isolés
+        de
+        l&#39;environnement global et entre eux, c&#39;est une étape obligatoire pour avoir installer et accès aux
+        modules
+        installés sur cet environnement virtuel.</p>
+    <p>Enfin, on installe tout simplement le module :</p>
+    <pre><code class="lang-zsh">python3 -m pip <span class="hljs-keyword">install</span> sentence_transformers
+</code></pre>
+    <h3 id="pipeline-d-encodage-des-documents">Pipeline d&#39;encodage des documents</h3>
+    <p>Une fois que les modules nécessaires ont été installés et importés dans le programme python, il fallait écrire un
+        algorithme qui devait encoder et stocker les documents dans un fichier Json.</p>
+    <p>Pour y parvenir, il nous fallait un modèle de traitement du langage naturel. Ici, on a utilisé
+        &quot;paraphrase-MiniLM-L6-v2&quot;, qui est un modèle basé sur la technique d&#39;encodage BERT inclus dans le
+        module Sentence Transformers.</p>
+    <p>Il y a plusieurs grandes étapes dans cette pipeline :</p>
+    <ol>
+        <li>Récupération des données;</li>
+        <li>Encodage des documents et mise en mémoire des embeddings;</li>
+        <li>Enregistrement des documents et de leurs embeddings;</li>
+    </ol>
+    <h4 id="r-cup-ration-des-donn-es">Récupération des données</h4>
+    <p>Tout d&#39;abord, le programme récupère les données du fichier source, ici <code>tweets.txt</code>. Il va ensuite
+        transformer ces données en une liste de chaînes de caractères, chaque élément étant un tweet.</p>
+    <h4 id="encodage-des-documents">Encodage des documents</h4>
+    <p>Puis on instantie un objet de la classe Sentence Transformer basé sur le modèle
+        &quot;paraphrase-MiniLM-L6-v2&quot;.
+        Une boucle va itérer sur chaque éléments de la liste de tweets et va tous les encoder en vecteur
+        d&#39;embeddings
+        via une méthode de l&#39;objet. On gardera ces vecteur dans une liste séparé pour les sauvegarder plus tard.</p>
+    <h4 id="enregistrement">Enregistrement</h4>
+    <p>Une fois tout les documents encodés, on procède à leur enregistrement dans un fichier json.
+        Une nouvelle boucle va alors itérer sur 2 listes : celle des tweets et celle des vecteurs. On va ensuite mettre
+        dans
+        un dictionnaire les données suivantes :</p>
+    <ul>
+        <li><code>id</code> : l&#39;index du tweet;</li>
+        <li><code>texte</code> : le contenu du tweet;</li>
+        <li><code>vecteur</code> : le vecteur d&#39;embeddings;</li>
+    </ul>
+    <p>Le dictionnaire sera ensuite ajouté à une liste, qui sera convertie en liste Json à l&#39;aide du module
+        <code>json</code> une fois que la boucle sera entièrement terminée. Le fichier Json dans lequel on enregistrera
+        ces
+        données est nommé <code>embeddings-tweets.json</code>.
+    </p>
+    <h3 id="pipeline-d-encodage-des-requ-tes">Pipeline d&#39;encodage des requêtes</h3>
+    <p>Voici les étapes de la pipeline :</p>
+    <ol>
+        <li>Récupération des requêtes saisies par l&#39;utilisateur;</li>
+        <li>Encodage des requêtes;</li>
+        <li>Affichage des documents pertinents;</li>
+    </ol>
+    <h4 id="lecture-des-requ-tes-utilisateur">Lecture des requêtes utilisateur</h4>
+    <p>On a implémenté 2 façons de saisir une requête :</p>
+    <ul>
+        <li>Saisie lors de l&#39;appel du programme en ligne de commande sous forme d&#39;arguments;</li>
+        <li>Saisie pendant le fonctionnement du programme;</li>
+    </ul>
+    <p>Si l&#39;utilisateur lance le programme en ligne de commande comme ceci :</p>
+    <pre><code class="lang-zsh">rag<span class="hljs-selector-class">.py</span> ce film était génial
+</code></pre>
+    <p>Alors le programme va récupérer la requête &quot;ce film était génial&quot; et va effectuer la recherche puis
+        s&#39;arrêter après avoir affiché les résultats.</p>
+    <p><img src="Screenshots/argument-requete.png" alt="Requête par argument CLI">
+        <em>Exemple de saisie de requête sous forme d&#39;arguments</em>
+    </p>
+    <p>Sinon, lorsque le programme est lancé normalement, l&#39;utilisateur a la possibilité de saisir sa requête. Si
+        l&#39;utilsateur valide sans rien saisir, alors le programme prend fin. Cependant, si l&#39;utilisateur valide
+        et
+        qu&#39;il a bien écrit une requête, alors celle-ci sera traitée. Le programme continuera à lire les requêtes
+        utilisateurs jusqu&#39;a ce que celui-ci envoie une requête vide.</p>
+    <p><img src="Screenshots/simple-requete.png" alt="Requête simple">
+        <em>Exemple de saisie d&#39;une seule requête</em>
+    </p>
+    <p><img src="Screenshots/double-requete.png" alt="Requête double">
+        <em>Exemple de saisie de deux requêtes</em>
+    </p>
+    <h4 id="encodage-de-la-requ-te">Encodage de la requête</h4>
+    <p>Dans le cas où la saisie est traitée, celle-ci sera encodé en vecteur d&#39;embedding par le même modèle qui a
+        encodé
+        les tweets dans un premier temps, avant d&#39;être comparé aux vecteurs des documents dans une boucle dans un
+        second
+        temps.</p>
+    <h4 id="affichage-des-tweets-pertinents">Affichage des tweets pertinents</h4>
+    <p>Pour déterminer la similarité des tweets avec la requête, on a calculé la distance cosinus entre les vecteurs,
+        puis
+        on a stocké les résultats dans une liste qui contiendra également l&#39;index du document correspondant. Le
+        résultat
+        du calcul servira de score de similarité. Cette liste sera ensuite triée et on affichera seulement les tweets
+        ayant
+        eu un score de similarité supérieur à 0.40.</p>
+    <p>On affiche alors, pour un tweet, son contenu et son score de similarité avec la requête en dessous.</p>
+    <hr>
+    <h2 id="definition-des-fonctions">Définition des fonctions</h2>
+    <pre><code class="lang-python"><span class="hljs-function"><span class="hljs-keyword">def</span> <span class="hljs-title">read_tweets</span><span class="hljs-params">()</span>:</span>
+    <span class="hljs-keyword">try</span>:
+        f = open(<span class="hljs-string">"tweets.txt"</span>, <span class="hljs-string">'r'</span>)
+    <span class="hljs-keyword">except</span>:
+        <span class="hljs-keyword">raise</span> Exception(<span class="hljs-string">"Le fichier des tweets n'existe pas : \"tweets.txt\"\n"</span>)
+    <span class="hljs-keyword">else</span>:
+        data = f.readlines()
+        f.close()
+    <span class="hljs-keyword">return</span> data
+</code></pre>
+    <p>Cette fonction essaie de charger le fichier &quot;tweets.txt&quot; en mémoire. Si le fichier n&#39;existe pas
+        alors
+        il renvoie une erreur. Sinon il récupère toutes les lignes du fichier et les affecte à une liste qui va être
+        renvoyée à la fin de la fonction.</p>
+    <pre><code class="lang-python">def gen_embeds(<span class="hljs-keyword">mode</span><span class="hljs-variable">l:</span> <span class="hljs-keyword">st</span>):
+    data = read_tweets()
+    embeddings = model.encode(data)
+
+    doclist = []
+    <span class="hljs-built_in">index</span> = <span class="hljs-number">1</span>
+    <span class="hljs-keyword">for</span> document in dat<span class="hljs-variable">a:</span>
+        doclist.<span class="hljs-keyword">append</span>(
+            {
+                <span class="hljs-string">"id"</span>: <span class="hljs-built_in">index</span>,
+                <span class="hljs-string">"texte"</span>: document,
+                <span class="hljs-string">"vecteur"</span>: embeddings[<span class="hljs-built_in">index</span>-<span class="hljs-number">1</span>].tolist()
+            }
+        )
+        <span class="hljs-built_in">index</span> += <span class="hljs-number">1</span>
+
+    destination = <span class="hljs-keyword">open</span>(<span class="hljs-string">"embeddings-tweets.json"</span>, <span class="hljs-string">'w'</span>)
+    js.dump(doclist, destination, <span class="hljs-built_in">indent</span>=<span class="hljs-number">4</span>, ensure_ascii=False)
+    destination.<span class="hljs-keyword">close</span>()
+</code></pre>
+    <p>Cette fonction prend une instance de Sentence Transformer (st) en paramètre. Elle va récupérer les données à
+        encoder
+        via la fonction <code>read_tweets()</code>. L&#39;encodage est ensuite pris en charge par la méthode
+        <code>encode()</code> du modèle. La fonction place les vecteur dans une dictionnaire avec le contenu du document
+        et
+        son indexe, et ce même dictionnaire sera ajouté à une liste qui sera convertie en liste Json et sauvegardé dans
+        un
+        fichier du même format.
+    </p>
+    <pre><code class="lang-python"><span class="hljs-function"><span class="hljs-keyword">def</span> <span class="hljs-title">parse_input</span><span class="hljs-params">(args: list)</span> -&gt; str:</span>
+    <span class="hljs-keyword">return</span> <span class="hljs-string">' '</span>.join(args).strip()
+</code></pre>
+    <p>Cette fonction va prendre une liste de chaînes de caractères et les unir ensemble en supprimant quelconque espace
+        en
+        trop.</p>
+    <pre><code class="lang-python">def simil_cos(a, b):
+    <span class="hljs-keyword">return</span> np.dot(a, b) / (np.linalg.norm(a) * np.linalg.norm(b))
+</code></pre>
+    <p>Cette fonction renvoie la distance cosinus entre deux vecteurs a et b.</p>
+    <pre><code class="lang-python">def init(<span class="hljs-keyword">mode</span><span class="hljs-variable">l:</span> <span class="hljs-keyword">st</span>, quiet = True):
+    <span class="hljs-keyword">try</span>:
+        <span class="hljs-keyword">f</span> = <span class="hljs-keyword">open</span>(<span class="hljs-string">"embeddings-tweets.json"</span>, <span class="hljs-string">'r'</span>)
+    excep<span class="hljs-variable">t:</span>
+        <span class="hljs-keyword">if</span> quiet == False : <span class="hljs-keyword">print</span>(<span class="hljs-string">"Génération des embeddings en cours..\n"</span>)
+        gen_embeds(model)
+        <span class="hljs-keyword">f</span> = <span class="hljs-keyword">open</span>(<span class="hljs-string">"embeddings-tweets.json"</span>, <span class="hljs-string">'r'</span>)
+    <span class="hljs-keyword">finally</span>:
+        <span class="hljs-keyword">f</span>.<span class="hljs-keyword">close</span>()
+    <span class="hljs-keyword">if</span> quiet == False : <span class="hljs-keyword">print</span>(<span class="hljs-string">"Initialisation terminée !\n"</span>)
+</code></pre>
+    <p>Cette fonction va vérifier que les données existent pour déterminer s&#39;il est nécessaire de générer un nouveau
+        fichier Json contenant les embeddings.</p>
+    <pre><code class="lang-python">def start(<span class="hljs-keyword">mode</span><span class="hljs-variable">l:</span> <span class="hljs-keyword">st</span>, quiet = True):
+    <span class="hljs-keyword">if</span> quiet == False : <span class="hljs-keyword">print</span>(<span class="hljs-string">"Lancement du programme"</span>)
+    init(model)
+    <span class="hljs-keyword">args</span> = sys.<span class="hljs-built_in">argv</span>[<span class="hljs-number">1</span>:]
+    cli = False
+    msg = <span class="hljs-string">"Saisissez votre requête (laisser vide pour quitter) :\n"</span>
+
+    <span class="hljs-keyword">if</span> <span class="hljs-built_in">len</span>(<span class="hljs-keyword">args</span>) &gt; <span class="hljs-number">0</span>:
+        req = parse_input(<span class="hljs-keyword">args</span>)
+        cli = True
+    <span class="hljs-keyword">else</span>:
+        req = <span class="hljs-built_in">input</span>(msg)
+
+    <span class="hljs-keyword">if</span> req.strip() == <span class="hljs-string">""</span>:
+        <span class="hljs-keyword">return</span>
+
+    <span class="hljs-keyword">while</span> True:
+        resultat = <span class="hljs-keyword">list</span>()
+        with <span class="hljs-keyword">open</span>(<span class="hljs-string">"embeddings-tweets.json"</span>, <span class="hljs-string">'r'</span>) <span class="hljs-keyword">as</span> jsf:
+            jsdata = js.load(jsf)
+            <span class="hljs-keyword">for</span> tweet in jsdat<span class="hljs-variable">a:</span>
+                resultat.<span class="hljs-keyword">append</span>((simil_cos(np.array(model.encode(req)), tweet[<span class="hljs-string">"vecteur"</span>]), tweet[<span class="hljs-string">"texte"</span>].strip()))
+
+        resultat = sorted(resultat, <span class="hljs-built_in">reverse</span>=True)
+        <span class="hljs-keyword">print</span>(<span class="hljs-string">"Voici les tweets les plus pertinent :\n"</span>)
+        position = <span class="hljs-number">1</span>
+        <span class="hljs-keyword">for</span> tweet in resulta<span class="hljs-variable">t:</span>
+            <span class="hljs-keyword">if</span> tweet[<span class="hljs-number">0</span>] &gt;= <span class="hljs-number">0.5</span> : <span class="hljs-keyword">print</span>(<span class="hljs-keyword">f</span><span class="hljs-string">"{position}. {tweet[1]}\nscore de similarité : {float('%.2f'%tweet[0])}\n"</span>)
+            position += <span class="hljs-number">1</span>
+
+        <span class="hljs-keyword">if</span> cli : <span class="hljs-keyword">break</span>
+        req = <span class="hljs-built_in">input</span>(msg)
+        <span class="hljs-keyword">if</span> req.strip() == <span class="hljs-string">""</span>:
+            <span class="hljs-keyword">break</span>
+
+    <span class="hljs-keyword">if</span> quiet == False : <span class="hljs-keyword">print</span>(<span class="hljs-string">"Fin du programme"</span>)
+</code></pre>
+    <p>C&#39;est la fonction principale du programme. C&#39;est ici que le programme va récupérer les requêtes et
+        procéder à
+        la recherche de correspondance avec les documents et à leur classement pour les afficher. Pour s&#39;assurer que
+        le
+        programme continue toujours de demander à l&#39;utilisateur de saisir sa requête, tout se passe dans une boucle
+        infinie qui ne s&#39;arrête seulement quand l&#39;utilisateur ne saisit rien et valide. La boucle ne
+        s&#39;exécute
+        qu&#39;une seule fois lorsque l&#39;utilisateur entre sa requête en tant qu&#39;arguments du programme.</p>
+</body>
+
+</html>
